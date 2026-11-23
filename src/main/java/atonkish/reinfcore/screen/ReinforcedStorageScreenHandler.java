@@ -1,15 +1,5 @@
 package atonkish.reinfcore.screen;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.ShulkerBoxSlot;
-import net.minecraft.screen.slot.Slot;
-
 import atonkish.reinfcore.ReinforcedCoreMod;
 import atonkish.reinfcore.mixin.SlotAccessor;
 import atonkish.reinfcore.util.ReinforcedStorageScreenModel;
@@ -17,14 +7,23 @@ import atonkish.reinfcore.util.ReinforcedStorageScreenModels;
 import atonkish.reinfcore.util.ReinforcedStorageScreenType;
 import atonkish.reinfcore.util.ReinforcingMaterial;
 import atonkish.reinfcore.util.math.Point2i;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.ShulkerBoxSlot;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
-public class ReinforcedStorageScreenHandler extends ScreenHandler {
+public class ReinforcedStorageScreenHandler extends AbstractContainerMenu {
   private static final int SLOT_SIZE = 18;
   private static final int GAP_BETWEEN_PLAYER_INVENTORY_STORAGE_AND_PLAYER_INVENTORY_HOTBAR = 4;
 
   private static final int SCROLL_SCREEN_COLS = 9;
 
-  private final Inventory inventory;
+  private final Container inventory;
   private final ReinforcingMaterial material;
   private final boolean isDoubleBlock;
   private final boolean isShulkerBox;
@@ -33,21 +32,21 @@ public class ReinforcedStorageScreenHandler extends ScreenHandler {
   private final ReinforcedStorageScreenModel screenModel;
 
   public ReinforcedStorageScreenHandler(
-      ScreenHandlerType<?> type,
+      MenuType<?> type,
       ReinforcingMaterial material,
       boolean isDoubleBlock,
       boolean isShulkerBox,
       int syncId,
-      PlayerInventory playerInventory,
-      Inventory inventory) {
+      Inventory playerInventory,
+      Container inventory) {
     super(type, syncId);
     this.inventory = inventory;
     this.material = material;
     this.isDoubleBlock = isDoubleBlock;
     this.isShulkerBox = isShulkerBox;
-    inventory.onOpen(playerInventory.player);
+    inventory.startOpen(playerInventory.player);
 
-    int size = inventory.size();
+    int size = inventory.getContainerSize();
     this.cols = ReinforcedStorageScreenModel.getContainerInventoryColumns(size);
     this.rows = ReinforcedStorageScreenModel.getContainerInventoryRows(size, this.cols);
 
@@ -62,8 +61,8 @@ public class ReinforcedStorageScreenHandler extends ScreenHandler {
   public static ReinforcedStorageScreenHandler createSingleBlockScreen(
       ReinforcingMaterial material,
       int syncId,
-      PlayerInventory playerInventory,
-      Inventory inventory) {
+      Inventory playerInventory,
+      Container inventory) {
     return new ReinforcedStorageScreenHandler(
         ModScreenHandlerType.REINFORCED_SINGLE_BLOCK_MAP.get(material),
         material,
@@ -75,17 +74,17 @@ public class ReinforcedStorageScreenHandler extends ScreenHandler {
   }
 
   public static ReinforcedStorageScreenHandler createSingleBlockScreen(
-      ReinforcingMaterial material, int syncId, PlayerInventory playerInventory) {
+      ReinforcingMaterial material, int syncId, Inventory playerInventory) {
     int size = ReinforcedStorageScreenModel.getContainerInventorySize(material, false);
-    Inventory inventory = new SimpleInventory(size);
+    Container inventory = new SimpleContainer(size);
     return createSingleBlockScreen(material, syncId, playerInventory, inventory);
   }
 
   public static ReinforcedStorageScreenHandler createDoubleBlockScreen(
       ReinforcingMaterial material,
       int syncId,
-      PlayerInventory playerInventory,
-      Inventory inventory) {
+      Inventory playerInventory,
+      Container inventory) {
     return new ReinforcedStorageScreenHandler(
         ModScreenHandlerType.REINFORCED_DOUBLE_BLOCK_MAP.get(material),
         material,
@@ -97,17 +96,17 @@ public class ReinforcedStorageScreenHandler extends ScreenHandler {
   }
 
   public static ReinforcedStorageScreenHandler createDoubleBlockScreen(
-      ReinforcingMaterial material, int syncId, PlayerInventory playerInventory) {
+      ReinforcingMaterial material, int syncId, Inventory playerInventory) {
     int size = ReinforcedStorageScreenModel.getContainerInventorySize(material, true);
-    Inventory inventory = new SimpleInventory(size);
+    Container inventory = new SimpleContainer(size);
     return createDoubleBlockScreen(material, syncId, playerInventory, inventory);
   }
 
   public static ReinforcedStorageScreenHandler createShulkerBoxScreen(
       ReinforcingMaterial material,
       int syncId,
-      PlayerInventory playerInventory,
-      Inventory inventory) {
+      Inventory playerInventory,
+      Container inventory) {
     return new ReinforcedStorageScreenHandler(
         ModScreenHandlerType.REINFORCED_SHULKER_BOX_MAP.get(material),
         material,
@@ -119,17 +118,17 @@ public class ReinforcedStorageScreenHandler extends ScreenHandler {
   }
 
   public static ReinforcedStorageScreenHandler createShulkerBoxScreen(
-      ReinforcingMaterial material, int syncId, PlayerInventory playerInventory) {
+      ReinforcingMaterial material, int syncId, Inventory playerInventory) {
     int size = ReinforcedStorageScreenModel.getContainerInventorySize(material, false);
-    Inventory inventory = new SimpleInventory(size);
+    Container inventory = new SimpleContainer(size);
     return createShulkerBoxScreen(material, syncId, playerInventory, inventory);
   }
 
-  private void addSlots(PlayerInventory playerInventory) {
+  private void addSlots(Inventory playerInventory) {
     Point2i containerInventoryPoint = this.screenModel.getContainerInventoryPoint();
     Point2i playerInventoryPoint = this.screenModel.getPlayerInventoryPoint();
 
-    for (int index = 0; index < this.inventory.size(); ++index) {
+    for (int index = 0; index < this.inventory.getContainerSize(); ++index) {
       int col = index % this.cols;
       int row = (index - col) / this.cols;
 
@@ -177,8 +176,8 @@ public class ReinforcedStorageScreenHandler extends ScreenHandler {
   }
 
   @Override
-  public boolean canUse(PlayerEntity player) {
-    return this.inventory.canPlayerUse(player);
+  public boolean stillValid(Player player) {
+    return this.inventory.stillValid(player);
   }
 
   public void scrollItems(float position) {
@@ -187,7 +186,7 @@ public class ReinforcedStorageScreenHandler extends ScreenHandler {
     }
 
     int i =
-        (this.inventory.size() + SCROLL_SCREEN_COLS - 1) / SCROLL_SCREEN_COLS
+        (this.inventory.getContainerSize() + SCROLL_SCREEN_COLS - 1) / SCROLL_SCREEN_COLS
             - ReinforcedCoreMod.CONFIG.scrollScreen.rows;
     int srow = (int) ((double) (position * (float) i) + 0.5);
     if (srow < 0) {
@@ -196,7 +195,7 @@ public class ReinforcedStorageScreenHandler extends ScreenHandler {
 
     Point2i containerInventoryPoint = this.screenModel.getContainerInventoryPoint();
 
-    for (int index = 0; index < this.inventory.size(); ++index) {
+    for (int index = 0; index < this.inventory.getContainerSize(); ++index) {
       int col = index % this.cols;
       int row = (index - col) / this.cols;
 
@@ -217,37 +216,37 @@ public class ReinforcedStorageScreenHandler extends ScreenHandler {
 
   public boolean shouldShowScrollbar() {
     return ReinforcedCoreMod.CONFIG.screenType == ReinforcedStorageScreenType.SCROLL
-        && this.inventory.size() > SCROLL_SCREEN_COLS * ReinforcedCoreMod.CONFIG.scrollScreen.rows;
+        && this.inventory.getContainerSize() > SCROLL_SCREEN_COLS * ReinforcedCoreMod.CONFIG.scrollScreen.rows;
   }
 
   @Override
-  public ItemStack quickMove(PlayerEntity player, int slot) {
+  public ItemStack quickMoveStack(Player player, int slot) {
     ItemStack itemStack = ItemStack.EMPTY;
     Slot slot2 = (Slot) this.slots.get(slot);
-    if (slot2 != null && slot2.hasStack()) {
-      ItemStack itemStack2 = slot2.getStack();
+    if (slot2 != null && slot2.hasItem()) {
+      ItemStack itemStack2 = slot2.getItem();
       itemStack = itemStack2.copy();
-      if (slot < this.inventory.size()
-          ? !this.insertItem(itemStack2, this.inventory.size(), this.slots.size(), true)
-          : !this.insertItem(itemStack2, 0, this.inventory.size(), false)) {
+      if (slot < this.inventory.getContainerSize()
+          ? !this.moveItemStackTo(itemStack2, this.inventory.getContainerSize(), this.slots.size(), true)
+          : !this.moveItemStackTo(itemStack2, 0, this.inventory.getContainerSize(), false)) {
         return ItemStack.EMPTY;
       }
       if (itemStack2.isEmpty()) {
-        slot2.setStack(ItemStack.EMPTY);
+        slot2.setByPlayer(ItemStack.EMPTY);
       } else {
-        slot2.markDirty();
+        slot2.setChanged();
       }
     }
     return itemStack;
   }
 
   @Override
-  public void onClosed(PlayerEntity player) {
-    super.onClosed(player);
-    this.inventory.onClose(player);
+  public void removed(Player player) {
+    super.removed(player);
+    this.inventory.stopOpen(player);
   }
 
-  public Inventory getInventory() {
+  public Container getInventory() {
     return this.inventory;
   }
 

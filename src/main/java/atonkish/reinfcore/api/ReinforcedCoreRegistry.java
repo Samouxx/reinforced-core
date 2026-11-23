@@ -1,14 +1,13 @@
 package atonkish.reinfcore.api;
 
-import net.minecraft.item.Item;
-import net.minecraft.screen.ScreenHandlerType;
-
 import atonkish.reinfcore.screen.ModScreenHandlerType;
 import atonkish.reinfcore.screen.ReinforcedStorageScreenHandler;
 import atonkish.reinfcore.util.ReinforcedStorageScreenModel;
 import atonkish.reinfcore.util.ReinforcedStorageScreenModels;
 import atonkish.reinfcore.util.ReinforcingMaterial;
 import atonkish.reinfcore.util.ReinforcingMaterials;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
 
 public class ReinforcedCoreRegistry {
   public static ReinforcingMaterial registerReinforcingMaterial(
@@ -26,17 +25,17 @@ public class ReinforcedCoreRegistry {
     return ReinforcedStorageScreenModels.registerMaterialDoubleBlock(material);
   }
 
-  public static ScreenHandlerType<ReinforcedStorageScreenHandler>
+  public static MenuType<ReinforcedStorageScreenHandler>
       registerMaterialSingleBlockScreenHandler(ReinforcingMaterial material) {
     return ModScreenHandlerType.registerMaterialSingleBlock(material);
   }
 
-  public static ScreenHandlerType<ReinforcedStorageScreenHandler>
+  public static MenuType<ReinforcedStorageScreenHandler>
       registerMaterialDoubleBlockScreenHandler(ReinforcingMaterial material) {
     return ModScreenHandlerType.registerMaterialDoubleBlock(material);
   }
 
-  public static ScreenHandlerType<ReinforcedStorageScreenHandler>
+  public static MenuType<ReinforcedStorageScreenHandler>
       registerMaterialShulkerBoxScreenHandler(ReinforcingMaterial material) {
     return ModScreenHandlerType.registerMaterialShulkerBox(material);
   }

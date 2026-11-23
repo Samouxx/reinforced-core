@@ -1,13 +1,12 @@
 package atonkish.reinfcore.item;
 
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-
 import atonkish.reinfcore.mixin.ItemGroupAccessor;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
 
 public class ModItemGroup {
-  public static void setIcon(ItemGroup itemGroup, ItemConvertible item) {
+  public static void setIcon(CreativeModeTab itemGroup, ItemLike item) {
     ItemStack itemStack = new ItemStack(item);
     ((ItemGroupAccessor) itemGroup).setIcon(itemStack);
   }

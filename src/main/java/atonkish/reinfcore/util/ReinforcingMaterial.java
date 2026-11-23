@@ -1,6 +1,6 @@
 package atonkish.reinfcore.util;
 
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 
 public class ReinforcingMaterial {
   private final String name;

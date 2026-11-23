@@ -1,36 +1,34 @@
 package atonkish.reinfcore.item;
 
-import net.minecraft.item.ItemGroup;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
-
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.CreativeModeTab;
 import atonkish.reinfcore.ReinforcedCoreMod;
 
 public class ModItemGroups {
-  public static final RegistryKey<ItemGroup> REINFORCED_STORAGE;
+  public static final ResourceKey<CreativeModeTab> REINFORCED_STORAGE;
 
   public static void init() {
     Registry.register(
-        Registries.ITEM_GROUP,
+        BuiltInRegistries.CREATIVE_MODE_TAB,
         ModItemGroups.REINFORCED_STORAGE,
         FabricItemGroup.builder()
-            .displayName(
-                Text.translatable(
+            .title(
+                Component.translatable(
                     String.format(
                         "itemGroup.%s.%s",
                         ReinforcedCoreMod.MOD_ID,
-                        ModItemGroups.REINFORCED_STORAGE.getValue().getPath())))
+                        ModItemGroups.REINFORCED_STORAGE.identifier().getPath())))
             .build());
   }
 
-  private static RegistryKey<ItemGroup> register(String id) {
-    return RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier.of(ReinforcedCoreMod.MOD_ID, id));
+  private static ResourceKey<CreativeModeTab> register(String id) {
+    return ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(ReinforcedCoreMod.MOD_ID, id));
   }
 
   static {

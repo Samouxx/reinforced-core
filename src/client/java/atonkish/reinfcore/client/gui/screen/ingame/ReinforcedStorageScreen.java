@@ -1,17 +1,15 @@
 package atonkish.reinfcore.client.gui.screen.ingame;
 
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
-
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Inventory;
 import atonkish.reinfcore.ReinforcedCoreMod;
 import atonkish.reinfcore.screen.ReinforcedStorageScreenHandler;
 import atonkish.reinfcore.util.ReinforcedStorageScreenModel;
@@ -19,7 +17,7 @@ import atonkish.reinfcore.util.ReinforcedStorageScreenModels;
 import atonkish.reinfcore.util.math.Point2i;
 
 @Environment(EnvType.CLIENT)
-public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScreenHandler> {
+public class ReinforcedStorageScreen extends AbstractContainerScreen<ReinforcedStorageScreenHandler> {
   private static final int SLOT_SIZE = 18;
   private static final int TEXT_LINE_HEIGHT = 11;
   private static final int PADDING_TOP = 17;
@@ -34,7 +32,7 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
   private static final int SCROLL_SCREEN_COLS = 9;
 
   private static final Identifier BACKGROUND_TEXTURE =
-      Identifier.ofVanilla("textures/gui/demo_background.png");
+      Identifier.withDefaultNamespace("textures/gui/demo_background.png");
   private static final int BACKGROUND_CORNER = 4;
   private static final int BACKGROUND_X = 0;
   private static final int BACKGROUND_Y = 0;
@@ -42,7 +40,7 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
   private static final int BACKGROUND_HEIGHT = 166;
 
   private static final Identifier CONTAINER_TEXTURE =
-      Identifier.ofVanilla("textures/gui/container/generic_54.png");
+      Identifier.withDefaultNamespace("textures/gui/container/generic_54.png");
   private static final int CONTAINER_INVENTORY_X = 7;
   private static final int CONTAINER_INVENTORY_Y = 17;
   private static final int CONTAINER_INVENTORY_COLS = 9;
@@ -53,16 +51,16 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
   private static final int PLAYER_INVENTORY_HEIGHT = 76;
 
   private static final Identifier SCROLLBAR_BACKGROUND_TEXTURE =
-      Identifier.ofVanilla("textures/gui/container/creative_inventory/tab_items.png");
+      Identifier.withDefaultNamespace("textures/gui/container/creative_inventory/tab_items.png");
   private static final int SCROLLBAR_BACKGROUND_X = 174;
   private static final int SCROLLBAR_BACKGROUND_Y = 17;
   private static final int SCROLLBAR_BACKGROUND_WIDTH = 14;
   private static final int SCROLLBAR_BACKGROUND_HEIGHT = 112;
 
   private static final Identifier SCROLLER_TEXTURE =
-      Identifier.ofVanilla("container/creative_inventory/scroller");
+      Identifier.withDefaultNamespace("container/creative_inventory/scroller");
   private static final Identifier SCROLLER_DISABLED_TEXTURE =
-      Identifier.ofVanilla("container/creative_inventory/scroller_disabled");
+      Identifier.withDefaultNamespace("container/creative_inventory/scroller_disabled");
   private static final int SCROLLER_WIDTH = 12;
   private static final int SCROLLER_HEIGHT = 15;
 
@@ -74,7 +72,7 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
   private boolean scrolling;
 
   public ReinforcedStorageScreen(
-      ReinforcedStorageScreenHandler handler, PlayerInventory inventory, Text title) {
+      ReinforcedStorageScreenHandler handler, Inventory inventory, Component title) {
     super(handler, inventory, title);
 
     this.scrollPosition = 0.0f;
@@ -88,12 +86,12 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
     this.cols = handler.getColumns();
     this.rows = handler.getRows();
 
-    this.backgroundWidth = PADDING_LEFT + this.cols * SLOT_SIZE + PADDING_RIGHT;
+    this.imageWidth = PADDING_LEFT + this.cols * SLOT_SIZE + PADDING_RIGHT;
     if (this.hasScrollbar()) {
-      this.backgroundWidth +=
+      this.imageWidth +=
           GAP_BETWEEN_CONTAINER_INVENTORY_AND_SCROLL_BAR + SCROLLBAR_BACKGROUND_WIDTH;
     }
-    this.backgroundHeight =
+    this.imageHeight =
         PADDING_TOP
             + this.rows * SLOT_SIZE
             + GAP_BETWEEN_CONTAINER_INVENTORY_AND_PLAYER_INVENTORY
@@ -101,12 +99,12 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
             + GAP_BETWEEN_PLAYER_INVENTORY_STORAGE_AND_PLAYER_INVENTORY_HOTBAR
             + 1 * SLOT_SIZE
             + PADDING_BOTTOM;
-    this.titleX = PADDING_LEFT + 1;
-    this.titleY = PADDING_TOP - TEXT_LINE_HEIGHT;
-    this.playerInventoryTitleX =
+    this.titleLabelX = PADDING_LEFT + 1;
+    this.titleLabelY = PADDING_TOP - TEXT_LINE_HEIGHT;
+    this.inventoryLabelX =
         PADDING_LEFT + (this.cols - SINGLE_SCREEN_DEFAULT_COLS) * SLOT_SIZE / 2 + 1;
-    this.playerInventoryTitleY =
-        this.backgroundHeight
+    this.inventoryLabelY =
+        this.imageHeight
             - (TEXT_LINE_HEIGHT
                 + 3 * SLOT_SIZE
                 + GAP_BETWEEN_PLAYER_INVENTORY_STORAGE_AND_PLAYER_INVENTORY_HOTBAR
@@ -115,13 +113,13 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
   }
 
   @Override
-  public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
     super.render(context, mouseX, mouseY, delta);
-    this.drawMouseoverTooltip(context, mouseX, mouseY);
+    this.renderTooltip(context, mouseX, mouseY);
   }
 
   @Override
-  protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
+  protected void renderBg(GuiGraphics context, float delta, int mouseX, int mouseY) {
     this.drawBackgroundTexture(context);
     this.drawSlotTexture(context);
     if (this.hasScrollbar()) {
@@ -129,21 +127,21 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
     }
   }
 
-  private void drawBackgroundTexture(DrawContext context) {
+  private void drawBackgroundTexture(GuiGraphics context) {
     // CHECKSTYLE.SUPPRESS: VariableDeclarationUsageDistance
     int hnum =
-        (this.backgroundWidth - BACKGROUND_CORNER * 2) / (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2);
+        (this.imageWidth - BACKGROUND_CORNER * 2) / (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2);
     // CHECKSTYLE.SUPPRESS: VariableDeclarationUsageDistance
     int hrem =
-        (this.backgroundWidth - BACKGROUND_CORNER * 2) % (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2);
+        (this.imageWidth - BACKGROUND_CORNER * 2) % (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2);
 
     // CHECKSTYLE.SUPPRESS: VariableDeclarationUsageDistance
     int vnum =
-        (this.backgroundHeight - BACKGROUND_CORNER * 2)
+        (this.imageHeight - BACKGROUND_CORNER * 2)
             / (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2);
     // CHECKSTYLE.SUPPRESS: VariableDeclarationUsageDistance
     int vrem =
-        (this.backgroundHeight - BACKGROUND_CORNER * 2)
+        (this.imageHeight - BACKGROUND_CORNER * 2)
             % (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2);
 
     //
@@ -151,11 +149,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
     //
 
     // left-top
-    context.drawTexture(
+    context.blit(
         RenderPipelines.GUI_TEXTURED,
         BACKGROUND_TEXTURE,
-        this.x,
-        this.y,
+        this.leftPos,
+        this.topPos,
         BACKGROUND_X,
         BACKGROUND_Y,
         BACKGROUND_CORNER,
@@ -164,11 +162,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
         256);
 
     // right-top
-    context.drawTexture(
+    context.blit(
         RenderPipelines.GUI_TEXTURED,
         BACKGROUND_TEXTURE,
-        this.x + this.backgroundWidth - BACKGROUND_CORNER,
-        this.y,
+        this.leftPos + this.imageWidth - BACKGROUND_CORNER,
+        this.topPos,
         BACKGROUND_WIDTH - BACKGROUND_CORNER,
         BACKGROUND_Y,
         BACKGROUND_CORNER,
@@ -177,11 +175,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
         256);
 
     // right-top
-    context.drawTexture(
+    context.blit(
         RenderPipelines.GUI_TEXTURED,
         BACKGROUND_TEXTURE,
-        this.x,
-        this.y + this.backgroundHeight - BACKGROUND_CORNER,
+        this.leftPos,
+        this.topPos + this.imageHeight - BACKGROUND_CORNER,
         BACKGROUND_X,
         BACKGROUND_HEIGHT - BACKGROUND_CORNER,
         BACKGROUND_CORNER,
@@ -190,11 +188,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
         256);
 
     // right-bottom
-    context.drawTexture(
+    context.blit(
         RenderPipelines.GUI_TEXTURED,
         BACKGROUND_TEXTURE,
-        this.x + this.backgroundWidth - BACKGROUND_CORNER,
-        this.y + this.backgroundHeight - BACKGROUND_CORNER,
+        this.leftPos + this.imageWidth - BACKGROUND_CORNER,
+        this.topPos + this.imageHeight - BACKGROUND_CORNER,
         BACKGROUND_WIDTH - BACKGROUND_CORNER,
         BACKGROUND_HEIGHT - BACKGROUND_CORNER,
         BACKGROUND_CORNER,
@@ -208,11 +206,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
 
     for (int hcnt = 0; hcnt < hnum; ++hcnt) {
       // top
-      context.drawTexture(
+      context.blit(
           RenderPipelines.GUI_TEXTURED,
           BACKGROUND_TEXTURE,
-          this.x + BACKGROUND_CORNER + hcnt * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-          this.y,
+          this.leftPos + BACKGROUND_CORNER + hcnt * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
+          this.topPos,
           BACKGROUND_CORNER,
           BACKGROUND_Y,
           BACKGROUND_WIDTH - BACKGROUND_CORNER * 2,
@@ -221,11 +219,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
           256);
 
       // bottom
-      context.drawTexture(
+      context.blit(
           RenderPipelines.GUI_TEXTURED,
           BACKGROUND_TEXTURE,
-          this.x + BACKGROUND_CORNER + hcnt * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-          this.y + this.backgroundHeight - BACKGROUND_CORNER,
+          this.leftPos + BACKGROUND_CORNER + hcnt * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
+          this.topPos + this.imageHeight - BACKGROUND_CORNER,
           BACKGROUND_CORNER,
           BACKGROUND_HEIGHT - BACKGROUND_CORNER,
           BACKGROUND_WIDTH - BACKGROUND_CORNER * 2,
@@ -236,11 +234,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
 
     for (int vcnt = 0; vcnt < vnum; ++vcnt) {
       // left
-      context.drawTexture(
+      context.blit(
           RenderPipelines.GUI_TEXTURED,
           BACKGROUND_TEXTURE,
-          this.x,
-          this.y + BACKGROUND_CORNER + vcnt * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
+          this.leftPos,
+          this.topPos + BACKGROUND_CORNER + vcnt * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
           BACKGROUND_X,
           BACKGROUND_CORNER,
           BACKGROUND_CORNER,
@@ -249,11 +247,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
           256);
 
       // right
-      context.drawTexture(
+      context.blit(
           RenderPipelines.GUI_TEXTURED,
           BACKGROUND_TEXTURE,
-          this.x + this.backgroundWidth - BACKGROUND_CORNER,
-          this.y + BACKGROUND_CORNER + vcnt * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
+          this.leftPos + this.imageWidth - BACKGROUND_CORNER,
+          this.topPos + BACKGROUND_CORNER + vcnt * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
           BACKGROUND_WIDTH - BACKGROUND_CORNER,
           BACKGROUND_CORNER,
           BACKGROUND_CORNER,
@@ -263,11 +261,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
     }
 
     // top
-    context.drawTexture(
+    context.blit(
         RenderPipelines.GUI_TEXTURED,
         BACKGROUND_TEXTURE,
-        this.x + BACKGROUND_CORNER + hnum * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-        this.y,
+        this.leftPos + BACKGROUND_CORNER + hnum * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
+        this.topPos,
         BACKGROUND_CORNER,
         BACKGROUND_Y,
         hrem,
@@ -276,11 +274,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
         256);
 
     // bottom
-    context.drawTexture(
+    context.blit(
         RenderPipelines.GUI_TEXTURED,
         BACKGROUND_TEXTURE,
-        this.x + BACKGROUND_CORNER + hnum * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-        this.y + this.backgroundHeight - BACKGROUND_CORNER,
+        this.leftPos + BACKGROUND_CORNER + hnum * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
+        this.topPos + this.imageHeight - BACKGROUND_CORNER,
         BACKGROUND_CORNER,
         BACKGROUND_HEIGHT - BACKGROUND_CORNER,
         hrem,
@@ -289,11 +287,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
         256);
 
     // left
-    context.drawTexture(
+    context.blit(
         RenderPipelines.GUI_TEXTURED,
         BACKGROUND_TEXTURE,
-        this.x,
-        this.y + BACKGROUND_CORNER + vnum * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
+        this.leftPos,
+        this.topPos + BACKGROUND_CORNER + vnum * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
         BACKGROUND_X,
         BACKGROUND_CORNER,
         BACKGROUND_CORNER,
@@ -302,11 +300,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
         256);
 
     // right
-    context.drawTexture(
+    context.blit(
         RenderPipelines.GUI_TEXTURED,
         BACKGROUND_TEXTURE,
-        this.x + this.backgroundWidth - BACKGROUND_CORNER,
-        this.y + BACKGROUND_CORNER + vnum * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
+        this.leftPos + this.imageWidth - BACKGROUND_CORNER,
+        this.topPos + BACKGROUND_CORNER + vnum * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
         BACKGROUND_WIDTH - BACKGROUND_CORNER,
         BACKGROUND_CORNER,
         BACKGROUND_CORNER,
@@ -320,11 +318,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
 
     for (int vcnt = 0; vcnt < vnum; ++vcnt) {
       for (int hcnt = 0; hcnt < hnum; ++hcnt) {
-        context.drawTexture(
+        context.blit(
             RenderPipelines.GUI_TEXTURED,
             BACKGROUND_TEXTURE,
-            this.x + BACKGROUND_CORNER + hcnt * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-            this.y + BACKGROUND_CORNER + vcnt * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
+            this.leftPos + BACKGROUND_CORNER + hcnt * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
+            this.topPos + BACKGROUND_CORNER + vcnt * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
             BACKGROUND_CORNER,
             BACKGROUND_CORNER,
             BACKGROUND_WIDTH - BACKGROUND_CORNER * 2,
@@ -333,11 +331,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
             256);
       }
 
-      context.drawTexture(
+      context.blit(
           RenderPipelines.GUI_TEXTURED,
           BACKGROUND_TEXTURE,
-          this.x + BACKGROUND_CORNER + hnum * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-          this.y + BACKGROUND_CORNER + vcnt * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
+          this.leftPos + BACKGROUND_CORNER + hnum * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
+          this.topPos + BACKGROUND_CORNER + vcnt * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
           BACKGROUND_CORNER,
           BACKGROUND_CORNER,
           hrem,
@@ -347,11 +345,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
     }
 
     for (int hcnt = 0; hcnt < hnum; ++hcnt) {
-      context.drawTexture(
+      context.blit(
           RenderPipelines.GUI_TEXTURED,
           BACKGROUND_TEXTURE,
-          this.x + BACKGROUND_CORNER + hcnt * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-          this.y + BACKGROUND_CORNER + vnum * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
+          this.leftPos + BACKGROUND_CORNER + hcnt * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
+          this.topPos + BACKGROUND_CORNER + vnum * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
           BACKGROUND_CORNER,
           BACKGROUND_CORNER,
           BACKGROUND_WIDTH - BACKGROUND_CORNER * 2,
@@ -360,11 +358,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
           256);
     }
 
-    context.drawTexture(
+    context.blit(
         RenderPipelines.GUI_TEXTURED,
         BACKGROUND_TEXTURE,
-        this.x + BACKGROUND_CORNER + hnum * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-        this.y + BACKGROUND_CORNER + vnum * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
+        this.leftPos + BACKGROUND_CORNER + hnum * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
+        this.topPos + BACKGROUND_CORNER + vnum * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
         BACKGROUND_CORNER,
         BACKGROUND_CORNER,
         hrem,
@@ -373,7 +371,7 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
         256);
   }
 
-  private void drawSlotTexture(DrawContext context) {
+  private void drawSlotTexture(GuiGraphics context) {
     //
     // container inventory
     //
@@ -388,11 +386,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
 
     for (int vcnt = 0; vcnt < vnum; ++vcnt) {
       for (int hcnt = 0; hcnt < hnum; ++hcnt) {
-        context.drawTexture(
+        context.blit(
             RenderPipelines.GUI_TEXTURED,
             CONTAINER_TEXTURE,
-            this.x + containerInventoryPoint.getX() + hcnt * CONTAINER_INVENTORY_COLS * SLOT_SIZE,
-            this.y + containerInventoryPoint.getY() + vcnt * CONTAINER_INVENTORY_ROWS * SLOT_SIZE,
+            this.leftPos + containerInventoryPoint.getX() + hcnt * CONTAINER_INVENTORY_COLS * SLOT_SIZE,
+            this.topPos + containerInventoryPoint.getY() + vcnt * CONTAINER_INVENTORY_ROWS * SLOT_SIZE,
             CONTAINER_INVENTORY_X,
             CONTAINER_INVENTORY_Y,
             CONTAINER_INVENTORY_COLS * SLOT_SIZE,
@@ -401,11 +399,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
             256);
       }
 
-      context.drawTexture(
+      context.blit(
           RenderPipelines.GUI_TEXTURED,
           CONTAINER_TEXTURE,
-          this.x + containerInventoryPoint.getX() + hnum * CONTAINER_INVENTORY_COLS * SLOT_SIZE,
-          this.y + containerInventoryPoint.getY() + vcnt * CONTAINER_INVENTORY_ROWS * SLOT_SIZE,
+          this.leftPos + containerInventoryPoint.getX() + hnum * CONTAINER_INVENTORY_COLS * SLOT_SIZE,
+          this.topPos + containerInventoryPoint.getY() + vcnt * CONTAINER_INVENTORY_ROWS * SLOT_SIZE,
           CONTAINER_INVENTORY_X,
           CONTAINER_INVENTORY_Y,
           hrem,
@@ -415,11 +413,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
     }
 
     for (int hcnt = 0; hcnt < hnum; ++hcnt) {
-      context.drawTexture(
+      context.blit(
           RenderPipelines.GUI_TEXTURED,
           CONTAINER_TEXTURE,
-          this.x + containerInventoryPoint.getX() + hcnt * CONTAINER_INVENTORY_COLS * SLOT_SIZE,
-          this.y + containerInventoryPoint.getY() + vnum * CONTAINER_INVENTORY_ROWS * SLOT_SIZE,
+          this.leftPos + containerInventoryPoint.getX() + hcnt * CONTAINER_INVENTORY_COLS * SLOT_SIZE,
+          this.topPos + containerInventoryPoint.getY() + vnum * CONTAINER_INVENTORY_ROWS * SLOT_SIZE,
           CONTAINER_INVENTORY_X,
           CONTAINER_INVENTORY_Y,
           CONTAINER_INVENTORY_COLS * SLOT_SIZE,
@@ -428,11 +426,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
           256);
     }
 
-    context.drawTexture(
+    context.blit(
         RenderPipelines.GUI_TEXTURED,
         CONTAINER_TEXTURE,
-        this.x + containerInventoryPoint.getX() + hnum * CONTAINER_INVENTORY_COLS * SLOT_SIZE,
-        this.y + containerInventoryPoint.getY() + vnum * CONTAINER_INVENTORY_ROWS * SLOT_SIZE,
+        this.leftPos + containerInventoryPoint.getX() + hnum * CONTAINER_INVENTORY_COLS * SLOT_SIZE,
+        this.topPos + containerInventoryPoint.getY() + vnum * CONTAINER_INVENTORY_ROWS * SLOT_SIZE,
         CONTAINER_INVENTORY_X,
         CONTAINER_INVENTORY_Y,
         hrem,
@@ -446,11 +444,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
 
     Point2i playerInventoryPoint = this.screenModel.getPlayerInventoryPoint();
 
-    context.drawTexture(
+    context.blit(
         RenderPipelines.GUI_TEXTURED,
         CONTAINER_TEXTURE,
-        this.x + playerInventoryPoint.getX(),
-        this.y + playerInventoryPoint.getY(),
+        this.leftPos + playerInventoryPoint.getX(),
+        this.topPos + playerInventoryPoint.getY(),
         PLAYER_INVENTORY_X,
         PLAYER_INVENTORY_Y,
         PLAYER_INVENTORY_WIDTH,
@@ -459,7 +457,7 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
         256);
   }
 
-  private void drawScrollbarTexture(DrawContext context) {
+  private void drawScrollbarTexture(GuiGraphics context) {
     //
     // backgraound
     //
@@ -467,11 +465,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
     int vnum = (this.rows * SLOT_SIZE - 2) / (SCROLLBAR_BACKGROUND_HEIGHT - 2);
     int vrem = (this.rows * SLOT_SIZE - 2) % (SCROLLBAR_BACKGROUND_HEIGHT - 2);
 
-    context.drawTexture(
+    context.blit(
         RenderPipelines.GUI_TEXTURED,
         SCROLLBAR_BACKGROUND_TEXTURE,
-        this.x + this.backgroundWidth - (SCROLLBAR_BACKGROUND_WIDTH + PADDING_RIGHT),
-        this.y + PADDING_TOP,
+        this.leftPos + this.imageWidth - (SCROLLBAR_BACKGROUND_WIDTH + PADDING_RIGHT),
+        this.topPos + PADDING_TOP,
         SCROLLBAR_BACKGROUND_X,
         SCROLLBAR_BACKGROUND_Y,
         SCROLLBAR_BACKGROUND_WIDTH,
@@ -480,11 +478,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
         256);
 
     for (int vcnt = 0; vcnt < vnum; ++vcnt) {
-      context.drawTexture(
+      context.blit(
           RenderPipelines.GUI_TEXTURED,
           SCROLLBAR_BACKGROUND_TEXTURE,
-          this.x + this.backgroundWidth - (SCROLLBAR_BACKGROUND_WIDTH + PADDING_RIGHT),
-          this.y + PADDING_TOP + 1 + vcnt * (SCROLLBAR_BACKGROUND_HEIGHT - 2),
+          this.leftPos + this.imageWidth - (SCROLLBAR_BACKGROUND_WIDTH + PADDING_RIGHT),
+          this.topPos + PADDING_TOP + 1 + vcnt * (SCROLLBAR_BACKGROUND_HEIGHT - 2),
           SCROLLBAR_BACKGROUND_X,
           SCROLLBAR_BACKGROUND_Y + 1,
           SCROLLBAR_BACKGROUND_WIDTH,
@@ -493,11 +491,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
           256);
     }
 
-    context.drawTexture(
+    context.blit(
         RenderPipelines.GUI_TEXTURED,
         SCROLLBAR_BACKGROUND_TEXTURE,
-        this.x + this.backgroundWidth - (SCROLLBAR_BACKGROUND_WIDTH + PADDING_RIGHT),
-        this.y + PADDING_TOP + 1 + vnum * (SCROLLBAR_BACKGROUND_HEIGHT - 2),
+        this.leftPos + this.imageWidth - (SCROLLBAR_BACKGROUND_WIDTH + PADDING_RIGHT),
+        this.topPos + PADDING_TOP + 1 + vnum * (SCROLLBAR_BACKGROUND_HEIGHT - 2),
         SCROLLBAR_BACKGROUND_X,
         SCROLLBAR_BACKGROUND_Y + 1,
         SCROLLBAR_BACKGROUND_WIDTH,
@@ -505,11 +503,11 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
         256,
         256);
 
-    context.drawTexture(
+    context.blit(
         RenderPipelines.GUI_TEXTURED,
         SCROLLBAR_BACKGROUND_TEXTURE,
-        this.x + this.backgroundWidth - (SCROLLBAR_BACKGROUND_WIDTH + PADDING_RIGHT),
-        this.y + PADDING_TOP + this.rows * SLOT_SIZE - 1,
+        this.leftPos + this.imageWidth - (SCROLLBAR_BACKGROUND_WIDTH + PADDING_RIGHT),
+        this.topPos + PADDING_TOP + this.rows * SLOT_SIZE - 1,
         SCROLLBAR_BACKGROUND_X,
         SCROLLBAR_BACKGROUND_Y + SCROLLBAR_BACKGROUND_HEIGHT - 1,
         SCROLLBAR_BACKGROUND_WIDTH,
@@ -521,14 +519,14 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
     // button
     //
 
-    int ymin = this.y + PADDING_TOP + 1;
+    int ymin = this.topPos + PADDING_TOP + 1;
     int ymax = ymin + this.rows * SLOT_SIZE;
 
     Identifier identifier = this.hasScrollbar() ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
-    context.drawGuiTexture(
+    context.blitSprite(
         RenderPipelines.GUI_TEXTURED,
         identifier,
-        this.x
+        this.leftPos
             + PADDING_LEFT
             + this.cols * SLOT_SIZE
             + GAP_BETWEEN_CONTAINER_INVENTORY_AND_SCROLL_BAR
@@ -539,7 +537,7 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
   }
 
   @Override
-  public boolean mouseClicked(Click click, boolean doubled) {
+  public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
     if (this.hasScrollbar() && click.button() == 0) {
       if (this.isClickInScrollbar(click.x(), click.y())) {
         this.scrolling = this.hasScrollbar();
@@ -551,7 +549,7 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
   }
 
   @Override
-  public boolean mouseReleased(Click click) {
+  public boolean mouseReleased(MouseButtonEvent click) {
     if (this.hasScrollbar() && click.button() == 0) {
       this.scrolling = false;
     }
@@ -560,7 +558,7 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
   }
 
   private boolean hasScrollbar() {
-    return this.handler.shouldShowScrollbar();
+    return this.menu.shouldShowScrollbar();
   }
 
   @Override
@@ -571,22 +569,22 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
     }
 
     int i =
-        MathHelper.ceilDiv(this.handler.getInventory().size(), SCROLL_SCREEN_COLS)
+        Mth.positiveCeilDiv(this.menu.getInventory().getContainerSize(), SCROLL_SCREEN_COLS)
             - ReinforcedCoreMod.CONFIG.scrollScreen.rows;
     float f = (float) (verticalAmount / (double) i);
-    this.scrollPosition = MathHelper.clamp(this.scrollPosition - f, 0.0f, 1.0f);
-    this.handler.scrollItems(this.scrollPosition);
+    this.scrollPosition = Mth.clamp(this.scrollPosition - f, 0.0f, 1.0f);
+    this.menu.scrollItems(this.scrollPosition);
     return true;
   }
 
   protected boolean isClickInScrollbar(double mouseX, double mouseY) {
     int i =
-        this.x
+        this.leftPos
             + PADDING_LEFT
             + this.cols * SLOT_SIZE
             + GAP_BETWEEN_CONTAINER_INVENTORY_AND_SCROLL_BAR
             + 1;
-    int j = this.y + PADDING_TOP + 1;
+    int j = this.topPos + PADDING_TOP + 1;
     int k = i + SCROLLER_WIDTH + 1;
     int l = j + this.rows * SLOT_SIZE;
     return mouseX >= (double) i
@@ -596,15 +594,15 @@ public class ReinforcedStorageScreen extends HandledScreen<ReinforcedStorageScre
   }
 
   @Override
-  public boolean mouseDragged(Click click, double offsetX, double offsetY) {
+  public boolean mouseDragged(MouseButtonEvent click, double offsetX, double offsetY) {
     if (this.hasScrollbar() && this.scrolling) {
-      int i = this.y + PADDING_TOP + 1;
+      int i = this.topPos + PADDING_TOP + 1;
       int j = i + this.rows * SLOT_SIZE;
       this.scrollPosition =
           ((float) click.y() - (float) i - (float) SCROLLER_HEIGHT / 2.0f)
               / ((float) (j - i) - (float) SCROLLER_HEIGHT);
-      this.scrollPosition = MathHelper.clamp(this.scrollPosition, 0.0f, 1.0f);
-      this.handler.scrollItems(this.scrollPosition);
+      this.scrollPosition = Mth.clamp(this.scrollPosition, 0.0f, 1.0f);
+      this.menu.scrollItems(this.scrollPosition);
       return true;
     }
 
