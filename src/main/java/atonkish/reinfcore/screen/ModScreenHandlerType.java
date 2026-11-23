@@ -2,12 +2,14 @@ package atonkish.reinfcore.screen;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
+
 import atonkish.reinfcore.ReinforcedCoreMod;
 import atonkish.reinfcore.util.ReinforcingMaterial;
 
@@ -62,8 +64,7 @@ public class ModScreenHandlerType {
       String id, MenuType.MenuSupplier<ReinforcedStorageScreenHandler> factory) {
     Identifier identifier = Identifier.fromNamespaceAndPath(ReinforcedCoreMod.MOD_ID, id);
     MenuType<ReinforcedStorageScreenHandler> type =
-        new MenuType<ReinforcedStorageScreenHandler>(
-            factory, FeatureFlags.VANILLA_SET);
+        new MenuType<ReinforcedStorageScreenHandler>(factory, FeatureFlags.VANILLA_SET);
     return Registry.register(BuiltInRegistries.MENU, identifier, type);
   }
 

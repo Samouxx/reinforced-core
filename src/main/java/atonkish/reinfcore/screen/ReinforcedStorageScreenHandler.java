@@ -1,12 +1,5 @@
 package atonkish.reinfcore.screen;
 
-import atonkish.reinfcore.ReinforcedCoreMod;
-import atonkish.reinfcore.mixin.SlotAccessor;
-import atonkish.reinfcore.util.ReinforcedStorageScreenModel;
-import atonkish.reinfcore.util.ReinforcedStorageScreenModels;
-import atonkish.reinfcore.util.ReinforcedStorageScreenType;
-import atonkish.reinfcore.util.ReinforcingMaterial;
-import atonkish.reinfcore.util.math.Point2i;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -16,6 +9,14 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.ShulkerBoxSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+
+import atonkish.reinfcore.ReinforcedCoreMod;
+import atonkish.reinfcore.mixin.SlotAccessor;
+import atonkish.reinfcore.util.ReinforcedStorageScreenModel;
+import atonkish.reinfcore.util.ReinforcedStorageScreenModels;
+import atonkish.reinfcore.util.ReinforcedStorageScreenType;
+import atonkish.reinfcore.util.ReinforcingMaterial;
+import atonkish.reinfcore.util.math.Point2i;
 
 public class ReinforcedStorageScreenHandler extends AbstractContainerMenu {
   private static final int SLOT_SIZE = 18;
@@ -59,10 +60,7 @@ public class ReinforcedStorageScreenHandler extends AbstractContainerMenu {
   }
 
   public static ReinforcedStorageScreenHandler createSingleBlockScreen(
-      ReinforcingMaterial material,
-      int syncId,
-      Inventory playerInventory,
-      Container inventory) {
+      ReinforcingMaterial material, int syncId, Inventory playerInventory, Container inventory) {
     return new ReinforcedStorageScreenHandler(
         ModScreenHandlerType.REINFORCED_SINGLE_BLOCK_MAP.get(material),
         material,
@@ -81,10 +79,7 @@ public class ReinforcedStorageScreenHandler extends AbstractContainerMenu {
   }
 
   public static ReinforcedStorageScreenHandler createDoubleBlockScreen(
-      ReinforcingMaterial material,
-      int syncId,
-      Inventory playerInventory,
-      Container inventory) {
+      ReinforcingMaterial material, int syncId, Inventory playerInventory, Container inventory) {
     return new ReinforcedStorageScreenHandler(
         ModScreenHandlerType.REINFORCED_DOUBLE_BLOCK_MAP.get(material),
         material,
@@ -103,10 +98,7 @@ public class ReinforcedStorageScreenHandler extends AbstractContainerMenu {
   }
 
   public static ReinforcedStorageScreenHandler createShulkerBoxScreen(
-      ReinforcingMaterial material,
-      int syncId,
-      Inventory playerInventory,
-      Container inventory) {
+      ReinforcingMaterial material, int syncId, Inventory playerInventory, Container inventory) {
     return new ReinforcedStorageScreenHandler(
         ModScreenHandlerType.REINFORCED_SHULKER_BOX_MAP.get(material),
         material,
@@ -216,7 +208,8 @@ public class ReinforcedStorageScreenHandler extends AbstractContainerMenu {
 
   public boolean shouldShowScrollbar() {
     return ReinforcedCoreMod.CONFIG.screenType == ReinforcedStorageScreenType.SCROLL
-        && this.inventory.getContainerSize() > SCROLL_SCREEN_COLS * ReinforcedCoreMod.CONFIG.scrollScreen.rows;
+        && this.inventory.getContainerSize()
+            > SCROLL_SCREEN_COLS * ReinforcedCoreMod.CONFIG.scrollScreen.rows;
   }
 
   @Override
@@ -227,7 +220,8 @@ public class ReinforcedStorageScreenHandler extends AbstractContainerMenu {
       ItemStack itemStack2 = slot2.getItem();
       itemStack = itemStack2.copy();
       if (slot < this.inventory.getContainerSize()
-          ? !this.moveItemStackTo(itemStack2, this.inventory.getContainerSize(), this.slots.size(), true)
+          ? !this.moveItemStackTo(
+              itemStack2, this.inventory.getContainerSize(), this.slots.size(), true)
           : !this.moveItemStackTo(itemStack2, 0, this.inventory.getContainerSize(), false)) {
         return ItemStack.EMPTY;
       }

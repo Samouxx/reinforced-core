@@ -1,6 +1,5 @@
 package atonkish.reinfcore.item;
 
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -8,6 +7,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
+
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
+
 import atonkish.reinfcore.ReinforcedCoreMod;
 
 public class ModItemGroups {
@@ -17,7 +19,7 @@ public class ModItemGroups {
     Registry.register(
         BuiltInRegistries.CREATIVE_MODE_TAB,
         ModItemGroups.REINFORCED_STORAGE,
-        FabricItemGroup.builder()
+        FabricCreativeModeTab.builder()
             .title(
                 Component.translatable(
                     String.format(
@@ -28,7 +30,9 @@ public class ModItemGroups {
   }
 
   private static ResourceKey<CreativeModeTab> register(String id) {
-    return ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(ReinforcedCoreMod.MOD_ID, id));
+    return ResourceKey.create(
+        Registries.CREATIVE_MODE_TAB,
+        Identifier.fromNamespaceAndPath(ReinforcedCoreMod.MOD_ID, id));
   }
 
   static {

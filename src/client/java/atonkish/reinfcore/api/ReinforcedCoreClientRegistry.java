@@ -2,9 +2,12 @@ package atonkish.reinfcore.api;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import net.minecraft.client.gui.screens.MenuScreens;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.screens.MenuScreens;
+
 import atonkish.reinfcore.client.gui.screen.ingame.ReinforcedStorageScreen;
 import atonkish.reinfcore.screen.ModScreenHandlerType;
 import atonkish.reinfcore.util.ReinforcingMaterial;

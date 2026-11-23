@@ -1,35 +1,21 @@
 package atonkish.reinfcore;
 
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.gametest.framework.GameTestInstance;
-import net.minecraft.gametest.framework.TestEnvironmentDefinition;
-import net.minecraft.resources.RegistryDataLoader;
-import net.minecraft.resources.ResourceKey;
+
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 
 import atonkish.reinfcore.api.ReinforcedCoreModInitializer;
-import atonkish.reinfcore.gametest.TestAnnotationLocator;
-import atonkish.reinfcore.gametest.TestFunction;
 import atonkish.reinfcore.item.ModItemGroups;
 
 public class ReinforcedCoreMod implements ModInitializer {
   public static final String MOD_ID = "reinfcore";
   public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
   public static ReinforcedCoreConfig CONFIG;
-  private static TestAnnotationLocator locator =
-      new TestAnnotationLocator(FabricLoader.getInstance());
 
   @Override
   public void onInitialize() {
@@ -45,35 +31,8 @@ public class ReinforcedCoreMod implements ModInitializer {
         .getEntrypoints(MOD_ID, ReinforcedCoreModInitializer.class)
         .forEach(ReinforcedCoreModInitializer::onInitializeReinforcedCore);
 
-    // entrypoint: "reinfcore-gametest"
-    this.onInitializeReinforcedCoreGameTest();
-  }
-
-  private void onInitializeReinforcedCoreGameTest() {
-    for (TestFunction testFunction : locator.getTestFunctions()) {
-      LOGGER.debug("Registering test function: {}", testFunction.identifier());
-      Registry.register(
-          BuiltInRegistries.TEST_FUNCTION, testFunction.identifier(), testFunction.testFunction());
-    }
-  }
-
-  public static void registerDynamicEntries(List<RegistryDataLoader.Loader<?>> registriesList) {
-    Map<ResourceKey<? extends Registry<?>>, Registry<?>> registries =
-        new IdentityHashMap<>(registriesList.size());
-
-    for (RegistryDataLoader.Loader<?> entry : registriesList) {
-      registries.put(entry.registry().key(), entry.registry());
-    }
-
-    Registry<GameTestInstance> testInstances =
-        (Registry<GameTestInstance>) registries.get(Registries.TEST_INSTANCE);
-    Registry<TestEnvironmentDefinition> testEnvironmentDefinitionRegistry =
-        (Registry<TestEnvironmentDefinition>)
-            Objects.requireNonNull(registries.get(Registries.TEST_ENVIRONMENT));
-
-    for (TestFunction testFunction : locator.getTestFunctions()) {
-      GameTestInstance testInstance = testFunction.testInstance(testEnvironmentDefinitionRegistry);
-      Registry.register(testInstances, testFunction.identifier(), testInstance);
-    }
+    // 26.x port: the "reinfcore-gametest" entrypoint (automated tests) was removed.
+    // It relied on a mixin into the game's registry loading, which 26.x rewrote,
+    // and it ran in every player's game although only developers used it.
   }
 }

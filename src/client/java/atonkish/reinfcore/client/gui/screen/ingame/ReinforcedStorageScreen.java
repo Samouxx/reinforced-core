@@ -1,8 +1,6 @@
 package atonkish.reinfcore.client.gui.screen.ingame;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -10,6 +8,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import atonkish.reinfcore.ReinforcedCoreMod;
 import atonkish.reinfcore.screen.ReinforcedStorageScreenHandler;
 import atonkish.reinfcore.util.ReinforcedStorageScreenModel;
@@ -17,7 +19,8 @@ import atonkish.reinfcore.util.ReinforcedStorageScreenModels;
 import atonkish.reinfcore.util.math.Point2i;
 
 @Environment(EnvType.CLIENT)
-public class ReinforcedStorageScreen extends AbstractContainerScreen<ReinforcedStorageScreenHandler> {
+public class ReinforcedStorageScreen
+    extends AbstractContainerScreen<ReinforcedStorageScreenHandler> {
   private static final int SLOT_SIZE = 18;
   private static final int TEXT_LINE_HEIGHT = 11;
   private static final int PADDING_TOP = 17;
@@ -73,7 +76,8 @@ public class ReinforcedStorageScreen extends AbstractContainerScreen<ReinforcedS
 
   public ReinforcedStorageScreen(
       ReinforcedStorageScreenHandler handler, Inventory inventory, Component title) {
-    super(handler, inventory, title);
+    // Since 26.x, imageWidth and imageHeight are final: the size is given to the parent constructor
+    super(handler, inventory, title, imageWidth(handler), imageHeight(handler));
 
     this.scrollPosition = 0.0f;
     this.scrolling = false;
@@ -86,19 +90,6 @@ public class ReinforcedStorageScreen extends AbstractContainerScreen<ReinforcedS
     this.cols = handler.getColumns();
     this.rows = handler.getRows();
 
-    this.imageWidth = PADDING_LEFT + this.cols * SLOT_SIZE + PADDING_RIGHT;
-    if (this.hasScrollbar()) {
-      this.imageWidth +=
-          GAP_BETWEEN_CONTAINER_INVENTORY_AND_SCROLL_BAR + SCROLLBAR_BACKGROUND_WIDTH;
-    }
-    this.imageHeight =
-        PADDING_TOP
-            + this.rows * SLOT_SIZE
-            + GAP_BETWEEN_CONTAINER_INVENTORY_AND_PLAYER_INVENTORY
-            + 3 * SLOT_SIZE
-            + GAP_BETWEEN_PLAYER_INVENTORY_STORAGE_AND_PLAYER_INVENTORY_HOTBAR
-            + 1 * SLOT_SIZE
-            + PADDING_BOTTOM;
     this.titleLabelX = PADDING_LEFT + 1;
     this.titleLabelY = PADDING_TOP - TEXT_LINE_HEIGHT;
     this.inventoryLabelX =
@@ -112,14 +103,30 @@ public class ReinforcedStorageScreen extends AbstractContainerScreen<ReinforcedS
                 + PADDING_BOTTOM);
   }
 
-  @Override
-  public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-    super.render(context, mouseX, mouseY, delta);
-    this.renderTooltip(context, mouseX, mouseY);
+  private static int imageWidth(ReinforcedStorageScreenHandler handler) {
+    int width = PADDING_LEFT + handler.getColumns() * SLOT_SIZE + PADDING_RIGHT;
+    if (handler.shouldShowScrollbar()) {
+      width += GAP_BETWEEN_CONTAINER_INVENTORY_AND_SCROLL_BAR + SCROLLBAR_BACKGROUND_WIDTH;
+    }
+    return width;
   }
 
+  private static int imageHeight(ReinforcedStorageScreenHandler handler) {
+    return PADDING_TOP
+        + handler.getRows() * SLOT_SIZE
+        + GAP_BETWEEN_CONTAINER_INVENTORY_AND_PLAYER_INVENTORY
+        + 3 * SLOT_SIZE
+        + GAP_BETWEEN_PLAYER_INVENTORY_STORAGE_AND_PLAYER_INVENTORY_HOTBAR
+        + 1 * SLOT_SIZE
+        + PADDING_BOTTOM;
+  }
+
+  // Since 26.x, the parent screen draws the tooltip itself, and the background is drawn in
+  // extractBackground,
+  // after the parent has dimmed the world behind the screen (like the vanilla chest screen).
   @Override
-  protected void renderBg(GuiGraphics context, float delta, int mouseX, int mouseY) {
+  public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    super.extractBackground(context, mouseX, mouseY, delta);
     this.drawBackgroundTexture(context);
     this.drawSlotTexture(context);
     if (this.hasScrollbar()) {
@@ -127,7 +134,7 @@ public class ReinforcedStorageScreen extends AbstractContainerScreen<ReinforcedS
     }
   }
 
-  private void drawBackgroundTexture(GuiGraphics context) {
+  private void drawBackgroundTexture(GuiGraphicsExtractor context) {
     // CHECKSTYLE.SUPPRESS: VariableDeclarationUsageDistance
     int hnum =
         (this.imageWidth - BACKGROUND_CORNER * 2) / (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2);
@@ -137,12 +144,10 @@ public class ReinforcedStorageScreen extends AbstractContainerScreen<ReinforcedS
 
     // CHECKSTYLE.SUPPRESS: VariableDeclarationUsageDistance
     int vnum =
-        (this.imageHeight - BACKGROUND_CORNER * 2)
-            / (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2);
+        (this.imageHeight - BACKGROUND_CORNER * 2) / (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2);
     // CHECKSTYLE.SUPPRESS: VariableDeclarationUsageDistance
     int vrem =
-        (this.imageHeight - BACKGROUND_CORNER * 2)
-            % (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2);
+        (this.imageHeight - BACKGROUND_CORNER * 2) % (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2);
 
     //
     // corner
@@ -371,7 +376,7 @@ public class ReinforcedStorageScreen extends AbstractContainerScreen<ReinforcedS
         256);
   }
 
-  private void drawSlotTexture(GuiGraphics context) {
+  private void drawSlotTexture(GuiGraphicsExtractor context) {
     //
     // container inventory
     //
@@ -389,8 +394,12 @@ public class ReinforcedStorageScreen extends AbstractContainerScreen<ReinforcedS
         context.blit(
             RenderPipelines.GUI_TEXTURED,
             CONTAINER_TEXTURE,
-            this.leftPos + containerInventoryPoint.getX() + hcnt * CONTAINER_INVENTORY_COLS * SLOT_SIZE,
-            this.topPos + containerInventoryPoint.getY() + vcnt * CONTAINER_INVENTORY_ROWS * SLOT_SIZE,
+            this.leftPos
+                + containerInventoryPoint.getX()
+                + hcnt * CONTAINER_INVENTORY_COLS * SLOT_SIZE,
+            this.topPos
+                + containerInventoryPoint.getY()
+                + vcnt * CONTAINER_INVENTORY_ROWS * SLOT_SIZE,
             CONTAINER_INVENTORY_X,
             CONTAINER_INVENTORY_Y,
             CONTAINER_INVENTORY_COLS * SLOT_SIZE,
@@ -402,8 +411,12 @@ public class ReinforcedStorageScreen extends AbstractContainerScreen<ReinforcedS
       context.blit(
           RenderPipelines.GUI_TEXTURED,
           CONTAINER_TEXTURE,
-          this.leftPos + containerInventoryPoint.getX() + hnum * CONTAINER_INVENTORY_COLS * SLOT_SIZE,
-          this.topPos + containerInventoryPoint.getY() + vcnt * CONTAINER_INVENTORY_ROWS * SLOT_SIZE,
+          this.leftPos
+              + containerInventoryPoint.getX()
+              + hnum * CONTAINER_INVENTORY_COLS * SLOT_SIZE,
+          this.topPos
+              + containerInventoryPoint.getY()
+              + vcnt * CONTAINER_INVENTORY_ROWS * SLOT_SIZE,
           CONTAINER_INVENTORY_X,
           CONTAINER_INVENTORY_Y,
           hrem,
@@ -416,8 +429,12 @@ public class ReinforcedStorageScreen extends AbstractContainerScreen<ReinforcedS
       context.blit(
           RenderPipelines.GUI_TEXTURED,
           CONTAINER_TEXTURE,
-          this.leftPos + containerInventoryPoint.getX() + hcnt * CONTAINER_INVENTORY_COLS * SLOT_SIZE,
-          this.topPos + containerInventoryPoint.getY() + vnum * CONTAINER_INVENTORY_ROWS * SLOT_SIZE,
+          this.leftPos
+              + containerInventoryPoint.getX()
+              + hcnt * CONTAINER_INVENTORY_COLS * SLOT_SIZE,
+          this.topPos
+              + containerInventoryPoint.getY()
+              + vnum * CONTAINER_INVENTORY_ROWS * SLOT_SIZE,
           CONTAINER_INVENTORY_X,
           CONTAINER_INVENTORY_Y,
           CONTAINER_INVENTORY_COLS * SLOT_SIZE,
@@ -457,7 +474,7 @@ public class ReinforcedStorageScreen extends AbstractContainerScreen<ReinforcedS
         256);
   }
 
-  private void drawScrollbarTexture(GuiGraphics context) {
+  private void drawScrollbarTexture(GuiGraphicsExtractor context) {
     //
     // backgraound
     //
