@@ -34,14 +34,6 @@ public class ReinforcedStorageScreen
   private static final int SINGLE_SCREEN_DEFAULT_COLS = 9;
   private static final int SCROLL_SCREEN_COLS = 9;
 
-  private static final Identifier BACKGROUND_TEXTURE =
-      Identifier.withDefaultNamespace("textures/gui/demo_background.png");
-  private static final int BACKGROUND_CORNER = 4;
-  private static final int BACKGROUND_X = 0;
-  private static final int BACKGROUND_Y = 0;
-  private static final int BACKGROUND_WIDTH = 248;
-  private static final int BACKGROUND_HEIGHT = 166;
-
   private static final Identifier CONTAINER_TEXTURE =
       Identifier.withDefaultNamespace("textures/gui/container/generic_54.png");
   private static final int CONTAINER_INVENTORY_X = 7;
@@ -134,246 +126,36 @@ public class ReinforcedStorageScreen
     }
   }
 
+  // 26.x removed textures/gui/demo_background.png: the same beveled frame is drawn with plain
+  // colors (black outline, white light on the top-left, dark shadow on the bottom-right)
   private void drawBackgroundTexture(GuiGraphicsExtractor context) {
-    // CHECKSTYLE.SUPPRESS: VariableDeclarationUsageDistance
-    int hnum =
-        (this.imageWidth - BACKGROUND_CORNER * 2) / (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2);
-    // CHECKSTYLE.SUPPRESS: VariableDeclarationUsageDistance
-    int hrem =
-        (this.imageWidth - BACKGROUND_CORNER * 2) % (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2);
-
-    // CHECKSTYLE.SUPPRESS: VariableDeclarationUsageDistance
-    int vnum =
-        (this.imageHeight - BACKGROUND_CORNER * 2) / (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2);
-    // CHECKSTYLE.SUPPRESS: VariableDeclarationUsageDistance
-    int vrem =
-        (this.imageHeight - BACKGROUND_CORNER * 2) % (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2);
-
-    //
-    // corner
-    //
-
-    // left-top
-    context.blit(
-        RenderPipelines.GUI_TEXTURED,
-        BACKGROUND_TEXTURE,
-        this.leftPos,
-        this.topPos,
-        BACKGROUND_X,
-        BACKGROUND_Y,
-        BACKGROUND_CORNER,
-        BACKGROUND_CORNER,
-        256,
-        256);
-
-    // right-top
-    context.blit(
-        RenderPipelines.GUI_TEXTURED,
-        BACKGROUND_TEXTURE,
-        this.leftPos + this.imageWidth - BACKGROUND_CORNER,
-        this.topPos,
-        BACKGROUND_WIDTH - BACKGROUND_CORNER,
-        BACKGROUND_Y,
-        BACKGROUND_CORNER,
-        BACKGROUND_CORNER,
-        256,
-        256);
-
-    // right-top
-    context.blit(
-        RenderPipelines.GUI_TEXTURED,
-        BACKGROUND_TEXTURE,
-        this.leftPos,
-        this.topPos + this.imageHeight - BACKGROUND_CORNER,
-        BACKGROUND_X,
-        BACKGROUND_HEIGHT - BACKGROUND_CORNER,
-        BACKGROUND_CORNER,
-        BACKGROUND_CORNER,
-        256,
-        256);
-
-    // right-bottom
-    context.blit(
-        RenderPipelines.GUI_TEXTURED,
-        BACKGROUND_TEXTURE,
-        this.leftPos + this.imageWidth - BACKGROUND_CORNER,
-        this.topPos + this.imageHeight - BACKGROUND_CORNER,
-        BACKGROUND_WIDTH - BACKGROUND_CORNER,
-        BACKGROUND_HEIGHT - BACKGROUND_CORNER,
-        BACKGROUND_CORNER,
-        BACKGROUND_CORNER,
-        256,
-        256);
-
-    //
-    // edge
-    //
-
-    for (int hcnt = 0; hcnt < hnum; ++hcnt) {
-      // top
-      context.blit(
-          RenderPipelines.GUI_TEXTURED,
-          BACKGROUND_TEXTURE,
-          this.leftPos + BACKGROUND_CORNER + hcnt * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-          this.topPos,
-          BACKGROUND_CORNER,
-          BACKGROUND_Y,
-          BACKGROUND_WIDTH - BACKGROUND_CORNER * 2,
-          BACKGROUND_CORNER,
-          256,
-          256);
-
-      // bottom
-      context.blit(
-          RenderPipelines.GUI_TEXTURED,
-          BACKGROUND_TEXTURE,
-          this.leftPos + BACKGROUND_CORNER + hcnt * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-          this.topPos + this.imageHeight - BACKGROUND_CORNER,
-          BACKGROUND_CORNER,
-          BACKGROUND_HEIGHT - BACKGROUND_CORNER,
-          BACKGROUND_WIDTH - BACKGROUND_CORNER * 2,
-          BACKGROUND_CORNER,
-          256,
-          256);
-    }
-
-    for (int vcnt = 0; vcnt < vnum; ++vcnt) {
-      // left
-      context.blit(
-          RenderPipelines.GUI_TEXTURED,
-          BACKGROUND_TEXTURE,
-          this.leftPos,
-          this.topPos + BACKGROUND_CORNER + vcnt * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
-          BACKGROUND_X,
-          BACKGROUND_CORNER,
-          BACKGROUND_CORNER,
-          BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2,
-          256,
-          256);
-
-      // right
-      context.blit(
-          RenderPipelines.GUI_TEXTURED,
-          BACKGROUND_TEXTURE,
-          this.leftPos + this.imageWidth - BACKGROUND_CORNER,
-          this.topPos + BACKGROUND_CORNER + vcnt * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
-          BACKGROUND_WIDTH - BACKGROUND_CORNER,
-          BACKGROUND_CORNER,
-          BACKGROUND_CORNER,
-          BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2,
-          256,
-          256);
-    }
-
-    // top
-    context.blit(
-        RenderPipelines.GUI_TEXTURED,
-        BACKGROUND_TEXTURE,
-        this.leftPos + BACKGROUND_CORNER + hnum * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-        this.topPos,
-        BACKGROUND_CORNER,
-        BACKGROUND_Y,
-        hrem,
-        BACKGROUND_CORNER,
-        256,
-        256);
-
-    // bottom
-    context.blit(
-        RenderPipelines.GUI_TEXTURED,
-        BACKGROUND_TEXTURE,
-        this.leftPos + BACKGROUND_CORNER + hnum * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-        this.topPos + this.imageHeight - BACKGROUND_CORNER,
-        BACKGROUND_CORNER,
-        BACKGROUND_HEIGHT - BACKGROUND_CORNER,
-        hrem,
-        BACKGROUND_CORNER,
-        256,
-        256);
-
-    // left
-    context.blit(
-        RenderPipelines.GUI_TEXTURED,
-        BACKGROUND_TEXTURE,
-        this.leftPos,
-        this.topPos + BACKGROUND_CORNER + vnum * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
-        BACKGROUND_X,
-        BACKGROUND_CORNER,
-        BACKGROUND_CORNER,
-        vrem,
-        256,
-        256);
-
-    // right
-    context.blit(
-        RenderPipelines.GUI_TEXTURED,
-        BACKGROUND_TEXTURE,
-        this.leftPos + this.imageWidth - BACKGROUND_CORNER,
-        this.topPos + BACKGROUND_CORNER + vnum * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
-        BACKGROUND_WIDTH - BACKGROUND_CORNER,
-        BACKGROUND_CORNER,
-        BACKGROUND_CORNER,
-        vrem,
-        256,
-        256);
-
-    //
-    // area
-    //
-
-    for (int vcnt = 0; vcnt < vnum; ++vcnt) {
-      for (int hcnt = 0; hcnt < hnum; ++hcnt) {
-        context.blit(
-            RenderPipelines.GUI_TEXTURED,
-            BACKGROUND_TEXTURE,
-            this.leftPos + BACKGROUND_CORNER + hcnt * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-            this.topPos + BACKGROUND_CORNER + vcnt * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
-            BACKGROUND_CORNER,
-            BACKGROUND_CORNER,
-            BACKGROUND_WIDTH - BACKGROUND_CORNER * 2,
-            BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2,
-            256,
-            256);
-      }
-
-      context.blit(
-          RenderPipelines.GUI_TEXTURED,
-          BACKGROUND_TEXTURE,
-          this.leftPos + BACKGROUND_CORNER + hnum * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-          this.topPos + BACKGROUND_CORNER + vcnt * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
-          BACKGROUND_CORNER,
-          BACKGROUND_CORNER,
-          hrem,
-          BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2,
-          256,
-          256);
-    }
-
-    for (int hcnt = 0; hcnt < hnum; ++hcnt) {
-      context.blit(
-          RenderPipelines.GUI_TEXTURED,
-          BACKGROUND_TEXTURE,
-          this.leftPos + BACKGROUND_CORNER + hcnt * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-          this.topPos + BACKGROUND_CORNER + vnum * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
-          BACKGROUND_CORNER,
-          BACKGROUND_CORNER,
-          BACKGROUND_WIDTH - BACKGROUND_CORNER * 2,
-          vrem,
-          256,
-          256);
-    }
-
-    context.blit(
-        RenderPipelines.GUI_TEXTURED,
-        BACKGROUND_TEXTURE,
-        this.leftPos + BACKGROUND_CORNER + hnum * (BACKGROUND_WIDTH - BACKGROUND_CORNER * 2),
-        this.topPos + BACKGROUND_CORNER + vnum * (BACKGROUND_HEIGHT - BACKGROUND_CORNER * 2),
-        BACKGROUND_CORNER,
-        BACKGROUND_CORNER,
-        hrem,
-        vrem,
-        256,
-        256);
+    int x = this.leftPos;
+    int y = this.topPos;
+    int w = this.imageWidth;
+    int h = this.imageHeight;
+    // gray body, leaving the top-right and bottom-left corner pixels transparent
+    context.fill(x + 1, y + 2, x + w - 1, y + h - 2, 0xFFC6C6C6);
+    context.fill(x + 1, y + 1, x + w - 2, y + 2, 0xFFC6C6C6);
+    context.fill(x + 2, y + h - 2, x + w - 1, y + h - 1, 0xFFC6C6C6);
+    // light
+    context.fill(x + 2, y + 1, x + w - 3, y + 3, 0xFFFFFFFF);
+    context.fill(x + 1, y + 2, x + 3, y + h - 3, 0xFFFFFFFF);
+    context.fill(x + 3, y + 3, x + 4, y + 4, 0xFFFFFFFF);
+    // shadow
+    context.fill(x + w - 3, y + 3, x + w - 1, y + h - 2, 0xFF555555);
+    context.fill(x + 3, y + h - 3, x + w - 1, y + h - 1, 0xFF555555);
+    context.fill(x + w - 4, y + h - 4, x + w - 3, y + h - 3, 0xFF555555);
+    // outline, with the rounded corner pixels
+    context.fill(x + 2, y, x + w - 3, y + 1, 0xFF000000);
+    context.fill(x, y + 2, x + 1, y + h - 3, 0xFF000000);
+    context.fill(x + w - 1, y + 3, x + w, y + h - 2, 0xFF000000);
+    context.fill(x + 3, y + h - 1, x + w - 2, y + h, 0xFF000000);
+    context.fill(x + 1, y + 1, x + 2, y + 2, 0xFF000000);
+    context.fill(x + w - 3, y + 1, x + w - 2, y + 2, 0xFF000000);
+    context.fill(x + w - 2, y + 2, x + w - 1, y + 3, 0xFF000000);
+    context.fill(x + 1, y + h - 3, x + 2, y + h - 2, 0xFF000000);
+    context.fill(x + 2, y + h - 2, x + 3, y + h - 1, 0xFF000000);
+    context.fill(x + w - 2, y + h - 2, x + w - 1, y + h - 1, 0xFF000000);
   }
 
   private void drawSlotTexture(GuiGraphicsExtractor context) {
