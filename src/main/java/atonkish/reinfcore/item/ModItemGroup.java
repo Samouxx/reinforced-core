@@ -8,7 +8,6 @@ import atonkish.reinfcore.mixin.ItemGroupAccessor;
 
 public class ModItemGroup {
   public static void setIcon(CreativeModeTab itemGroup, ItemLike item) {
-    ItemStack itemStack = new ItemStack(item);
-    ((ItemGroupAccessor) itemGroup).setIcon(itemStack);
+    ((ItemGroupAccessor) itemGroup).setIconGenerator(() -> new ItemStack(item));
   }
 }
